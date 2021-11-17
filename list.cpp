@@ -255,16 +255,13 @@ public:
         Node *prev_node = pos.node_;
         Node *post_node = prev_node->next_node;
         Node *current_node = nullptr;
-        try{
-            current_node = new Node(value, post_node);
-            prev_node->next_node = current_node;
-            Iterator current_pos(current_node);      
-            current_node = nullptr;
-            ++size_;
-            return current_pos;
-        } catch (const std::bad_alloc&) {
-            throw;
-        }        
+
+        current_node = new Node(value, post_node);
+        prev_node->next_node = current_node;
+        Iterator current_pos(current_node);      
+        current_node = nullptr;
+        ++size_;
+        return current_pos;      
                 
     }
 
