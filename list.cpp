@@ -141,13 +141,7 @@ public:
     // Возвращает итератор, указывающий на позицию, следующую за последним элементом односвязного списка
     // Разыменовывать этот итератор нельзя - попытка разыменования приведёт к неопределённому поведению
     [[nodiscard]] Iterator end() noexcept {
-        Node* tmp = head_.next_node;
-        while (tmp != nullptr)
-        {                     
-            tmp = tmp->next_node;
-        }
-        Iterator end(tmp);
-        return end;
+        return Iterator(nullptr);
     }
 
     // Возвращает константный итератор, ссылающийся на первый элемент
@@ -162,14 +156,7 @@ public:
     // Разыменовывать этот итератор нельзя - попытка разыменования приведёт к неопределённому поведению
     // Результат вызова эквивалентен вызову метода cend()
     [[nodiscard]] ConstIterator end() const noexcept {
-        // assert(false);
-        Node* tmp = head_.next_node;
-        while (tmp != nullptr)
-        {                     
-            tmp = tmp->next_node;
-        }
-        ConstIterator end(tmp);
-        return end;
+        return ConstIterator(nullptr);
     }
 
     // Возвращает константный итератор, ссылающийся на первый элемент
@@ -182,13 +169,7 @@ public:
     // Возвращает константный итератор, указывающий на позицию, следующую за последним элементом односвязного списка
     // Разыменовывать этот итератор нельзя - попытка разыменования приведёт к неопределённому поведению
     [[nodiscard]] ConstIterator cend() const noexcept {
-        Node* tmp = head_.next_node;
-        while (tmp != nullptr)
-        {                     
-            tmp = tmp->next_node;
-        }
-        ConstIterator end(tmp);
-        return end;
+        return ConstIterator(nullptr);
     }
 
     // Возвращает итератор, указывающий на позицию перед первым элементом односвязного списка.
@@ -224,26 +205,12 @@ public:
     }
     //Копирующий конструктор
     SingleLinkedList(const SingleLinkedList& other):head_(),size_(0) {
-        Node* prev_node = head_.next_node;
-        Node* next_node = nullptr;
-        try {
-            for (auto &item:other){
-                next_node = new Node(item, nullptr);
-                if (prev_node == nullptr){                    
-                    head_.next_node = next_node;
-                } else{
-                    prev_node->next_node = next_node;
-                }
-                prev_node = next_node;
-                next_node = nullptr;
-                ++size_;
-            }
+        SingleLinkedList tmp;
+        auto t = tmp.before_begin(); 
+        for(auto& item: other) {
+            t = tmp.InsertAfter(t, item);
         }
-        catch(const std::bad_alloc&){
-            delete next_node;
-            Clear();
-            throw;
-        }
+        swap(tmp);
     }
 
     SingleLinkedList& operator=(const SingleLinkedList& rhs){
@@ -257,13 +224,8 @@ public:
 
     // Обменивает содержимое списков за время O(1)
     void swap(SingleLinkedList& other) noexcept {
-        // Реализуйте обмен содержимого списков самостоятельно
-        Node tmp_head = other.head_;
-        size_t tmp_size = other.size_;
-        other.head_.next_node = head_.next_node;
-        other.size_ = size_;
-        head_.next_node = tmp_head.next_node;
-        size_ = tmp_size;
+        std::swap(other.size_,size_);
+        std::swap(other.head_.next_node,head_.next_node);
     }
 
     // Возвращает количество элементов в списке за время O(1)
@@ -275,7 +237,7 @@ public:
     // Сообщает, пустой ли список за время O(1)
     [[nodiscard]] bool IsEmpty() const noexcept {
         // Заглушка. Реализуйте метод самостоятельно
-        return !static_cast<bool>(size_);
+        return size_ == 0;
     }
     // Вставляет элемент value в начало списка за время O(1)
     void PushFront(const Type& value) {
@@ -301,7 +263,6 @@ public:
             ++size_;
             return current_pos;
         } catch (const std::bad_alloc&) {
-            delete current_node;
             throw;
         }        
                 
@@ -378,12 +339,12 @@ bool operator<(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& 
 
 template <typename Type>
 bool operator<=(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& rhs) {
-    return (lhs < rhs) || (lhs == rhs);
+    return !(lhs > rhs);
 }
 
 template <typename Type>
 bool operator>(const SingleLinkedList<Type>& lhs, const SingleLinkedList<Type>& rhs) {
-    return (lhs != rhs) && !(lhs < rhs);
+    return std::lexicographical_compare(rhs.begin(),rhs.end(),lhs.begin(),lhs.end());
 }
 
 template <typename Type>
